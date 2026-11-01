@@ -10,7 +10,11 @@ const pkg = await readJson("package.json");
 const lock = await readJson("package-lock.json");
 const versions = await readJson("versions.json");
 
-assert.equal(manifest.id, "base64-img-copy-paste");
+// https://docs.obsidian.md/Reference/Manifest
+assert.match(manifest.id, /^[a-z]+(?:-[a-z]+)*$/, "Plugin ID must contain only lowercase letters and hyphens");
+assert.ok(!manifest.id.includes("obsidian"), "Plugin ID must not contain obsidian");
+assert.ok(!manifest.id.endsWith("plugin"), "Plugin ID must not end with plugin");
+assert.equal(manifest.id, "img-copy-paste");
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
 assert.equal(manifest.version, pkg.version);
 assert.equal(manifest.version, lock.version);

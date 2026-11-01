@@ -68,7 +68,7 @@ callout marker:
 - **默认插入图片的 caption 名称** (image caption): alt text for generated image
   embeds; defaults to `image`. An empty value produces empty alt text.
 
-Settings are stored in `.obsidian/plugins/base64-img-copy-paste/data.json` (or the
+Settings are stored in `.obsidian/plugins/img-copy-paste/data.json` (or the
 corresponding custom Obsidian configuration folder). Keep this personal file when
 updating the plugin; it is not part of the release.
 
@@ -79,7 +79,7 @@ listed, install it manually:
 
 1. Download `main.js` and `manifest.json` from a
    [GitHub release](https://github.com/zzhixin/obsidian-base64-img-copy-paste/releases).
-2. Create `.obsidian/plugins/base64-img-copy-paste/` in your vault and put both
+2. Create `.obsidian/plugins/img-copy-paste/` in your vault and put both
    files there.
 3. Reload Obsidian, open **Settings → Community plugins**, and enable
    **base64-img-copy-paste**.
@@ -87,9 +87,13 @@ listed, install it manually:
 To update, disable the plugin, replace those two release files, then enable it
 again. Preserve `data.json`.
 
-If upgrading from the old `base64-img-paste` plugin ID, disable the old plugin,
-copy its `data.json` into the new plugin folder, and enable the new plugin. Avoid
-enabling both copies at the same time.
+Starting with 0.1.2, the plugin ID is `img-copy-paste` to comply with the community
+directory's manifest rules. The display name and repository name are unchanged.
+If upgrading from either old ID (`base64-img-paste` or `base64-img-copy-paste`),
+disable the old plugin, install the new release in `.obsidian/plugins/img-copy-paste/`,
+copy the old folder's `data.json` into the new folder, and enable the new plugin.
+Avoid enabling both copies at the same time. Reassign any custom command hotkeys
+because Obsidian identifies commands by the plugin ID.
 
 The manifest currently declares Obsidian 1.5.0 or later. The plugin does not use
 Node.js or Electron at runtime; mobile clipboard behavior and the declared minimum
@@ -120,7 +124,7 @@ npm run build
 
 `npm run dev` watches the TypeScript sources. `npm run release:prepare` runs tests,
 builds the plugin and validates/stages the release files under
-`release/base64-img-copy-paste/`. See [the release checklist](RELEASING.md) for
+`release/img-copy-paste/`. See [the release checklist](RELEASING.md) for
 publishing and official-directory submission.
 
 ## Credits and license

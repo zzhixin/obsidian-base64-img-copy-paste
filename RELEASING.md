@@ -4,7 +4,8 @@
 
 - Repository: `https://github.com/zzhixin/obsidian-base64-img-copy-paste`
 - Default branch: `main`
-- Plugin ID and display name: `base64-img-copy-paste`
+- Plugin ID: `img-copy-paste`
+- Display name: `base64-img-copy-paste`
 - Author: `zhixin`
 - License: MIT
 - Description: `Copies notes with local images as base64 Markdown and converts pasted base64 images into saved PNG embeds.`
@@ -20,8 +21,8 @@
    files. Do not add `node_modules/`, `ref/` or personal `data.json` files.
 4. Push `main`.
 5. Create a GitHub Release targeting that commit, with a tag exactly matching
-   `manifest.json` (for example `0.1.1`, without a `v` prefix).
-6. Attach `release/base64-img-copy-paste/main.js` and `manifest.json` as individual
+   `manifest.json` (for example `0.1.2`, without a `v` prefix).
+6. Attach `release/img-copy-paste/main.js` and `manifest.json` as individual
    release assets. The source archive and a committed `release/` folder are not
    substitutes for these attachments. This plugin has no `styles.css`.
 7. Verify both uploaded files match the staged files, then publish the release.

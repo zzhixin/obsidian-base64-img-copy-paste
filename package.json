@@ -1,6 +1,6 @@
 {
   "name": "obsidian-base64-img-copy-paste",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Obsidian plugin that copies notes as base64 Markdown and converts pasted base64 images into saved PNG embeds.",
   "main": "main.js",
   "scripts": {
