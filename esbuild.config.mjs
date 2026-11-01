@@ -32,7 +32,7 @@ const context = await esbuild.context({
   sourcemap: production ? false : "inline",
   treeShaking: true,
   outfile: "main.js",
-  minify: production
+  minify: false
 });
 
 if (production) {

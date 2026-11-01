@@ -94,19 +94,21 @@ export default class Base64ImageCopyPastePlugin extends Plugin {
   private registerBase64Export() {
     this.addCommand({
       id: "copy-as-base64-format",
-      name: "Copy as base64 format",
-      checkCallback: (checking) => {
+      name: "Export markdown",
+      callback: async () => {
         const file = this.app.workspace.getActiveFile();
-        if (!file || file.extension !== "md") return false;
-        if (!checking) void this.copyAsBase64(file);
-        return true;
+        if (!file || file.extension !== "md") {
+          new Notice("请先打开需要导出的 Markdown 笔记，再执行 Export markdown");
+          return;
+        }
+        await this.copyAsBase64(file);
       }
     });
 
     this.registerEvent(this.app.workspace.on("file-menu", (menu, file) => {
       if (!(file instanceof TFile) || file.extension !== "md") return;
       menu.addItem((item) => item
-        .setTitle("Copy as base64 format")
+        .setTitle("Export markdown")
         .setIcon("clipboard-copy")
         .onClick(() => this.copyAsBase64(file)));
     }));
@@ -125,7 +127,7 @@ export default class Base64ImageCopyPastePlugin extends Plugin {
         ? `已复制，转换 ${result.convertedCount} 张图片；${failures} 张本地图片读取失败，已保留原链接`
         : `已复制为 Base64 Markdown，转换 ${result.convertedCount} 张图片`);
     } catch (error) {
-      console.error("Copy as base64 format failed", error);
+      console.error("Export markdown failed", error);
       new Notice("复制为 Base64 Markdown 失败，请检查文件和剪贴板权限");
     }
   }

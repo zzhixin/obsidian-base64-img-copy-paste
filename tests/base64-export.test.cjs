@@ -108,7 +108,7 @@ function pluginHarness() {
   const clipboardApi = { async writeText(text) { clipboard.push(text); } };
   const { default: Plugin } = loadModule('main.ts', {
     ...host, Notice: class { constructor(message) { notices.push(message); } }
-  }, { navigator: { clipboard: clipboardApi } });
+  }, { navigator: { clipboard: clipboardApi }, document: {} });
   const plugin = new Plugin();
   state.view = { file: state.file, editor: { getValue: () => state.content } };
   app.workspace = {
@@ -124,23 +124,39 @@ function pluginHarness() {
   return { plugin, state, clipboard, clipboardApi, notices, commands };
 }
 
-test("command palette checks availability without copying; execution uses latest full editor contents", async () => {
-  const { plugin, state, clipboard, commands } = pluginHarness();
-  assert.equal(commands[0].name, 'Copy as base64 format');
+test("command is always discoverable and exports the latest full editor contents", async () => {
+  const { state, clipboard, commands, notices } = pluginHarness();
+  assert.equal(commands[0].name, 'Export markdown');
   assert.equal(commands[0].id, 'copy-as-base64-format');
-  assert.equal(commands[0].checkCallback(true), true);
+  assert.equal(commands[0].checkCallback, undefined);
+  assert.equal(commands[0].editorCheckCallback, undefined);
+  assert.equal(typeof commands[0].callback, 'function');
   assert.equal(clipboard.length, 0);
-  let completion;
-  const originalCopy = plugin.copyAsBase64.bind(plugin);
-  plugin.copyAsBase64 = file => completion = originalCopy(file);
-  assert.equal(commands[0].checkCallback(false), true);
-  await completion;
+  await commands[0].callback();
   assert.equal(clipboard[0], `latest ![](${dataUrl})`);
   assert.equal(state.content, 'latest ![](a.png)');
   state.file = null;
-  assert.equal(commands[0].checkCallback(true), false);
+  await commands[0].callback();
+  assert.match(notices.at(-1), /请先打开/);
   state.file = new TFile('image.png');
-  assert.equal(commands[0].checkCallback(true), false);
+  await commands[0].callback();
+  assert.match(notices.at(-1), /请先打开/);
+  assert.equal(clipboard.length, 1);
+});
+
+test("plugin startup registers the palette command with no active note", async () => {
+  const { plugin, state, commands } = pluginHarness();
+  commands.length = 0;
+  state.file = null;
+  plugin.loadData = async () => ({});
+  plugin.registerEditorExtension = () => {};
+  plugin.registerDomEvent = () => {};
+  plugin.addSettingTab = () => {};
+  await plugin.onload();
+  assert.equal(commands.length, 1);
+  assert.equal(commands[0].id, 'copy-as-base64-format');
+  assert.equal(commands[0].checkCallback, undefined);
+  assert.equal(typeof commands[0].callback, 'function');
 });
 
 test("reading view without an editor uses the file contents", async () => {
@@ -154,7 +170,7 @@ test("file menu exports the selected file rather than the active editor", async 
   const { state, clipboard } = pluginHarness();
   let action;
   state.menu({ addItem(build) {
-    const item = { setTitle() { return item; }, setIcon() { return item; }, onClick(callback) { action = callback; return item; } };
+    const item = { setTitle(title) { assert.equal(title, 'Export markdown'); return item; }, setIcon() { return item; }, onClick(callback) { action = callback; return item; } };
     build(item);
   } }, new TFile('Other.md'));
   await action();
