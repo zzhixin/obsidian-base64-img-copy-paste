@@ -18,13 +18,14 @@ import {
   TransactionSpec
 } from "@codemirror/state";
 import { EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view";
+import { exportMarkdownAsBase64 } from "./base64-export";
 
-interface Base64ImagePasteSettings {
+interface Base64ImageCopyPasteSettings {
   imageFolder: string;
   defaultImageCaption: string;
 }
 
-const DEFAULT_SETTINGS: Base64ImagePasteSettings = {
+const DEFAULT_SETTINGS: Base64ImageCopyPasteSettings = {
   imageFolder: "base64-images",
   defaultImageCaption: "image"
 };
@@ -46,8 +47,8 @@ const QUOTE_CITATION_PREFIX_PATTERN = /^>\s?\[@/;
 const deferredPasteEffect = StateEffect.define<{ placeholders: string[]; text: string }>();
 const internalPasteAnnotation = Annotation.define<boolean>();
 
-export default class Base64ImagePastePlugin extends Plugin {
-  settings: Base64ImagePasteSettings;
+export default class Base64ImageCopyPastePlugin extends Plugin {
+  settings: Base64ImageCopyPasteSettings;
 
   async onload() {
     await this.loadSettings();
@@ -56,12 +57,12 @@ export default class Base64ImagePastePlugin extends Plugin {
       EditorState.transactionFilter.of((tr) => this.filterInputTransaction(tr)),
       ViewPlugin.fromClass(
         class {
-          plugin: Base64ImagePastePlugin;
+          plugin: Base64ImageCopyPastePlugin;
           view: EditorView;
 
           constructor(view: EditorView) {
             this.view = view;
-            this.plugin = Base64ImagePastePlugin.instance;
+            this.plugin = Base64ImageCopyPastePlugin.instance;
           }
 
           update(update: ViewUpdate) {
@@ -86,13 +87,53 @@ export default class Base64ImagePastePlugin extends Plugin {
       { capture: true }
     );
 
-    this.addSettingTab(new Base64ImagePasteSettingTab(this.app, this));
+    this.addSettingTab(new Base64ImageCopyPasteSettingTab(this.app, this));
+    this.registerBase64Export();
   }
 
-  static instance: Base64ImagePastePlugin;
+  private registerBase64Export() {
+    this.addCommand({
+      id: "copy-as-base64-format",
+      name: "Copy as base64 format",
+      checkCallback: (checking) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file || file.extension !== "md") return false;
+        if (!checking) void this.copyAsBase64(file);
+        return true;
+      }
+    });
+
+    this.registerEvent(this.app.workspace.on("file-menu", (menu, file) => {
+      if (!(file instanceof TFile) || file.extension !== "md") return;
+      menu.addItem((item) => item
+        .setTitle("Copy as base64 format")
+        .setIcon("clipboard-copy")
+        .onClick(() => this.copyAsBase64(file)));
+    }));
+  }
+
+  private async copyAsBase64(file: TFile): Promise<void> {
+    try {
+      const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+      const content = view?.file?.path === file.path
+        ? view.editor.getValue()
+        : await this.app.vault.cachedRead(file);
+      const result = await exportMarkdownAsBase64(this.app, content, file.path);
+      await navigator.clipboard.writeText(result.content);
+      const failures = result.failedPaths.length;
+      new Notice(failures
+        ? `已复制，转换 ${result.convertedCount} 张图片；${failures} 张本地图片读取失败，已保留原链接`
+        : `已复制为 Base64 Markdown，转换 ${result.convertedCount} 张图片`);
+    } catch (error) {
+      console.error("Copy as base64 format failed", error);
+      new Notice("复制为 Base64 Markdown 失败，请检查文件和剪贴板权限");
+    }
+  }
+
+  static instance: Base64ImageCopyPastePlugin;
 
   async loadSettings() {
-    Base64ImagePastePlugin.instance = this;
+    Base64ImageCopyPastePlugin.instance = this;
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
 
@@ -251,7 +292,7 @@ export default class Base64ImagePastePlugin extends Plugin {
   }
 
   private createDeferredPastePlaceholder(): string {
-    return `![processing-image](base64-img-paste-${Date.now()}-${Math.random().toString(36).slice(2)})`;
+    return `![processing-image](base64-img-copy-paste-${Date.now()}-${Math.random().toString(36).slice(2)})`;
   }
 
   private async resolveDeferredPaste(
@@ -492,10 +533,10 @@ export default class Base64ImagePastePlugin extends Plugin {
 
 }
 
-class Base64ImagePasteSettingTab extends PluginSettingTab {
-  plugin: Base64ImagePastePlugin;
+class Base64ImageCopyPasteSettingTab extends PluginSettingTab {
+  plugin: Base64ImageCopyPastePlugin;
 
-  constructor(app: App, plugin: Base64ImagePastePlugin) {
+  constructor(app: App, plugin: Base64ImageCopyPastePlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }

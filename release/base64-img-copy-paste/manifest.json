@@ -1,0 +1,10 @@
+{
+  "id": "base64-img-copy-paste",
+  "name": "base64-img-copy-paste",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Copies notes with local images as base64 Markdown and converts pasted base64 images into saved PNG embeds.",
+  "author": "zhixin",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}

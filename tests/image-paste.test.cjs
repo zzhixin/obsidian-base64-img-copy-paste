@@ -1,15 +1,15 @@
 const assert = require("node:assert/strict");
-const { readFileSync } = require("node:fs");
 const { resolve } = require("node:path");
 const { test } = require("node:test");
 const { runInNewContext } = require("node:vm");
-const { transformSync } = require("esbuild");
+const { buildSync } = require("esbuild");
 const { EditorState } = require("@codemirror/state");
 
 // Exercise the actual plugin with only the Obsidian host and image storage stubbed.
-const compiled = transformSync(readFileSync(resolve(__dirname, "../main.ts"), "utf8"), {
-  loader: "ts", format: "cjs"
-}).code;
+const compiled = buildSync({
+  entryPoints: [resolve(__dirname, "../main.ts")],
+  bundle: true, packages: "external", format: "cjs", write: false
+}).outputFiles[0].text;
 const pluginModule = { exports: {} };
 runInNewContext(compiled, {
   module: pluginModule,

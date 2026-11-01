@@ -1,7 +1,7 @@
 {
-  "name": "obsidian-base64-img-paste",
+  "name": "obsidian-base64-img-copy-paste",
   "version": "0.1.0",
-  "description": "Obsidian plugin that converts pasted base64 image data URLs into saved PNG embeds.",
+  "description": "Obsidian plugin that copies notes as base64 Markdown and converts pasted base64 images into saved PNG embeds.",
   "main": "main.js",
   "scripts": {
     "test": "node --test tests/*.test.cjs",
