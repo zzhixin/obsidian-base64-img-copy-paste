@@ -4,6 +4,7 @@
   "description": "Obsidian plugin that converts pasted base64 image data URLs into saved PNG embeds.",
   "main": "main.js",
   "scripts": {
+    "test": "node --test tests/*.test.cjs",
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "typecheck": "tsc -noEmit -skipLibCheck"
